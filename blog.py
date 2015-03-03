@@ -6,14 +6,17 @@ running = True
 def create():
     try:   
         con = sqlite3.connect('ABC.db')
+        r= con.execute('PRAGMA foreign_keys=ON')
         c = con.cursor()
         c.execute("create table if not exists category_tab(cat_id integer primary key autoincrement,\
-                   categ text)")
+                   categ text not null Unique)")
+        c.execute("insert or ignore into category_tab(cat_id, categ) values(0, 'default')")
         c.execute("create table if not exists post_tab(pid integer primary key autoincrement,\
                    post_nam text not null, post_cont text, cati integer references\
-                   category_tab(cat_id))")
+                   category_tab(cat_id))") 
     except Exception as error:
         print(str(error))    
+#INSERT POST IN blog
 def insertPost(post_Nam, post_Cont, categ=0):
     try:
         con = sqlite3.connect('ABC.db')
@@ -30,7 +33,7 @@ def insertPost(post_Nam, post_Cont, categ=0):
     finally:
         con.commit()
         con.close()
-
+# to generate list of post... 
 def listdb():
     try:
         con = sqlite3.connect('ABC.db')
@@ -38,9 +41,14 @@ def listdb():
         c.execute("select * from post_tab")
         data = c.fetchall()
         for eachr in data:
-            print("Id: %s Post Name: %s   \n\tContent: %s" %(eachr[0], eachr[1], eachr[2]))
+            query = "select categ from category_tab where cat_id \
+                     =" + str(eachr[3])
+            cat = list(c.execute(query))
+            print("Category:(%s)" %(cat[0]))
+            print("ID:%s Post Name: %s   \n\tContent: %s\n"\
+                  %(eachr[0], eachr[1], eachr[2]))
     except Exception as err:
-        print("No post available")
+        print("No post available",str(err))
 # to search KEYWORD in the post 
 def searchdb(key):
     try:   
@@ -63,16 +71,10 @@ def createCat(cname):
         num = cname
         con = sqlite3.connect('ABC.db')
         c = con.cursor()
-        c.execute("select cat_id from category_tab where categ=?",(cname,))
-        listname = c.fetchall();
-        if len(listname) == 0:
-            c.execute("insert into category_tab(categ) values(?)",(cname,))
-        else:
-             print("Category already exists")
+        c.execute("insert into category_tab(categ) values(?)",(cname,))         
     except Exception as error:
-        print(str(error))
+        print("Category Name already exists or default value used ")        
     finally:
-        c1 = con.cursor()
         con.commit()
         con.close()
 #to print category list
