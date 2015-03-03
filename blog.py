@@ -38,7 +38,7 @@ def listdb():
         c.execute("select * from post_tab")
         data = c.fetchall()
         for eachr in data:
-            print("Post Name: %s   \n\tContent: %s" %(eachr[1], eachr[2]))
+            print("Id: %s Post Name: %s   \n\tContent: %s" %(eachr[0], eachr[1], eachr[2]))
     except Exception as err:
         print("No post available")
 # to search KEYWORD in the post 
