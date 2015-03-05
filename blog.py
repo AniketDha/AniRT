@@ -102,7 +102,7 @@ def assignCat(pid, cid):
         qry1= "select count(*) from category_tab where cat_id =" + str(cid)
         c.execute(qry1)
         data = c.fetchone()
-        if data == 0:
+        if (data[0] == 0):
             print("Category doesn\'t exists")
         else:
             query = "update post_tab set cati= " + str(cid) + " where pid= " + str(pid)
