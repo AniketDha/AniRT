@@ -24,15 +24,15 @@ Blog supports 8 commands those are mentioned above.
  These are some assumptions which are also the requirement to run the Blog code. 
 
 
-  * ######Sqlite3 is installed on the machine.
+  * #####Sqlite3 is installed on the machine.
        * Type in following command if sqlite is not present:                            
           * sudo apt-get intall sqlite3 libsqlite3-dev
-  * ######Python3 is installed on the machine.
+  * #####Python3 is installed on the machine.
        * Python is installed on stable release version of ubuntu 14.04. 
           Type in following command python3 is not present:
           * sudo apt-get install python3-minimal
           
-  * ######Manually change the permission of the file using following command
+  * #####Manually change the permission of the file using following command
       * chmod +X blog.py
 
 ###Instructions
