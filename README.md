@@ -6,16 +6,26 @@ It has 8 commands to perform add, assign, list, search operations on the blog. I
 Application is built using python 3 and Sqlite3 database. Two tables cover up the backened of the application. First table is for post and second stores the category that are assigned to posts. 
 
 ###Commands
+```
  * ./blog.py --help
+     * This commands displays help 
  * ./blog.py post list  
+     * This Command list all the post already present.
  * ./blog.py post add "post Name" "Content"
+     * This commands adds post to the database with post-id as argument.
  * ./blog.py post del post-id
+     * This command deletes post from the database with post-id as argument.
  * ./blog.py post search "keyword"
+     * This command searches for post with keyword present in it.
  * ./blog.py category add "Category-Name"
+     * This command adds Category to the database with category-Name as argument.
  * ./blog.py category list
+     * This command lists the cateogry present in the database.
  * ./blog.py category assign post-id cat-id
+     * This Command assign's category-Id to the post with post present in the argument.
  * ./blog.py post add "title" "content" --category "Cat-Name"
-  
+     * This command adds post and category and assign's category-Id to post in the command. It adds category if not present in the database or if present assign's category-Id already present in the database to current post. 
+```  
 
 Blog application responds to the above command format with properly specified arguments. Application creates database tables for the user when run for the first time. In case of invalid format error messages are provided. Framework is not used to built the code.
 
