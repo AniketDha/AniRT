@@ -36,6 +36,10 @@ Blog supports 8 commands those are mentioned above.
           
   * Manually change the permission of the file using following command
       * chmod +X blog.py
+  
+  * Intially executed Blog.py file and some records inserted.
+         When user runs the Blog.py file, the table in the database creates database file and tables in it.
+         User should insert few records in both the tables for post and category.
 
 ###Instructions
 
