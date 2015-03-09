@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 import sys
-import os
 import sqlite3
+import unittest
 running = True
 def create():
     try:   
         con = sqlite3.connect('ABC.db')
-        r= con.execute('PRAGMA foreign_keys=ON')
+        r = con.execute('PRAGMA foreign_keys=ON')
         c = con.cursor()
         c.execute("create table if not exists category_tab(cat_id integer primary key autoincrement,\
                    categ text not null Unique)")
@@ -16,24 +16,38 @@ def create():
                    category_tab(cat_id))") 
     except Exception as error:
         print(str(error))    
-#INSERT POST IN blog
 def insertPost(post_Nam, post_Cont, categ=0):
     try:
+        post_Nam = post_Nam.lstrip()
         con = sqlite3.connect('ABC.db')
-        c = con.cursor()
-        c.execute("select pid from post_tab where post_nam=?",(post_Nam,))
-        listname = c.fetchall();
-        if len(listname) == 0:
-            c.execute("insert into post_tab(post_nam, post_cont,cati)\
-                       values(?,?,?)",(post_Nam, post_Cont, categ))
+        check = 0
+        pwlist = post_Nam.split(" ")   
+        for each in range(len(pwlist)):          #if post Name is empty or invalid 
+            if (pwlist[each].isalnum() == False):
+                check = 0
+            else:
+                check = 1
+        if (check):
+            c = con.cursor()
+            c.execute("select pid from post_tab where post_nam=?",(post_Nam,))
+            listname = c.fetchall();
+            if len(listname) == 0:
+                c.execute("insert into post_tab(post_nam, post_cont,cati)\
+                           values(?,?,?)",(post_Nam, post_Cont, categ))
+                return("Post Updated") 
+
+            else:
+                print("Post Name already exists")
+                return("Invalid Post Name")
         else:
-            print("Post Name is already exists")
+            return("Invalid Post Name")
+            print("Post Name is invalid or empty")
     except Exception as err:
         print(str(err))
     finally:
         con.commit()
         con.close()
-# to generate list of post... 
+# List of the post ID, Name Category
 def listdb():
     try:
         con = sqlite3.connect('ABC.db')
@@ -44,6 +58,9 @@ def listdb():
             query = "select categ from category_tab where cat_id \
                      =" + str(eachr[3])
             cat = list(c.execute(query))
+            if (len(cat) == 0):
+               print("(Category Not Present, Post assigned the Default category)")
+               cat =['Default'] 
             print("Category:(%s)" %(cat[0]))
             print("ID:%s Post Name: %s   \n\tContent: %s\n"\
                   %(eachr[0], eachr[1], eachr[2]))
@@ -68,12 +85,22 @@ def searchdb(key):
 # to add category to the category list
 def createCat(cname):
     try:
-        num = cname
+        check = 1
         con = sqlite3.connect('ABC.db')
-        c = con.cursor()
-        c.execute("insert into category_tab(categ) values(?)",(cname,))         
+        p = cname.split(" ")   
+        for each in range(len(p)):
+            if (p[each].isalnum() == False):
+                check = 0
+        if (check):
+            c = con.cursor()
+            c.execute("insert into category_tab(categ) values(?)",(cname,))                
+            return(1)
+        else:
+            print("category Name Invalid")
+            return(0)      
     except Exception as error:
-        print("Category Name already exists or default value used ")        
+        print("Category Name already exists or default value used")        
+        
     finally:
         con.commit()
         con.close()
@@ -93,6 +120,18 @@ def listCat():
     finally:
         con.close()
 
+def delPost(pid):
+    try:
+        con = sqlite3.connect('ABC.db')
+        c = con.cursor()
+        c.execute('delete from post_tab where pid = ?', (pid,))
+        return("Post Deleted Successfully")
+    except Exception as error:
+        print("For Help - ./blog.py --help")
+        return(str(error))
+    finally:
+        con.commit()
+        con.close()
 """ here we assign category id to post  pid: post id,
     Cid : category id"""
 def assignCat(pid, cid):
@@ -100,15 +139,19 @@ def assignCat(pid, cid):
         con = sqlite3.connect('ABC.db')
         c = con.cursor()
         qry1= "select count(*) from category_tab where cat_id =" + str(cid)
+        qry2= "select count(*) from post_tab where pid =" + str(pid)
         c.execute(qry1)
-        data = c.fetchone()
-        if (data[0] == 0):
-            print("Category doesn\'t exists")
+        data = c.fetchone()  
+        c.execute(qry2)
+        p_id = c.fetchone()
+        if (data[0] == 0 or p_id[0] == 0):
+            print("Category or post id doesn\'t exists")
         else:
             query = "update post_tab set cati= " + str(cid) + " where pid= " + str(pid)
             c.execute(query)
     except Exception as error:
-        print(str(error))
+        print("Category id or post id invalid")
+        print("For Help - ./blog.py --help")
     finally: 
         con.commit()
         con.close()
@@ -116,7 +159,7 @@ def assignCat(pid, cid):
 """format: blog.py post add "title" "content" --category "cat-name"""
 def bothCmd(lst):
     try:  
-        createCat(lst[5])
+        present = createCat(lst[5])
         con = sqlite3.connect('ABC.db')
         c = con.cursor()
         qry ="select cat_id from category_tab where categ='" + str(lst[5]) + "'"
@@ -125,26 +168,30 @@ def bothCmd(lst):
         if cid != None:
             p = cid[0]
             insertPost(lst[2], lst[3], p)
-        print("Post submited with category ", lst[5])
+        if(present):
+            print("Post submited with category ", lst[5])
+        else:
+            print("For Help - ./blog.py --help")
     except Exception as error:
-        print(err)      
+        print(error)      
 # command determiner function to decide the command
 def cmdDet(arg):
     try:
         if arg[0] == '--help':
             print('----Commands for using blog----')
-            print('post')
-            print('post list  -> Lists the post present')
-            print('post add ["title"] ["content"] -> adds a new post and content ')
-            print('post search ["Keyword"] -> searches for posts and content with ["keyword"] present')                                        
-            print('post add ["title"] ["content"] --category ["cat-name"] ->adds new post and Category')
-            print('\ncategory')
-            print('category add [category name] -> adds new category')
-            print('category list -> lists the category available')
-            print('category [assign post ID] [Cat ID] -> assigns category to the post')
+            print('Post')
+            print('post list  ->\t\t\t\t\t\t  Lists the post present')
+            print('post add ["title"] ["content"] ->\t\t\t  Adds a new post and content ')
+            print('post del [post id]  -> \t\t\t\t\t  Delete the post by providing [post-id]')
+            print('post search ["Keyword"] ->\t\t\t\t  Searches for posts and content with ["keyword"] present')                                        
+            print('post add ["title"] ["content"] --category ["cat-name"] -> Adds new post and Category')
+            print('\nCategory')
+            print('category add [category name] -> \t\t\t  Adds new category')
+            print('category list -> \t\t\t\t\t  Lists the category available')
+            print('category [assign post ID] [Cat ID] ->\t\t\t  Assigns category to the post')
         # Post commands start here
         elif (arg[0] == 'post' and len(arg) >= 2):     
-             try:
+            try:
                 if (arg[1] == 'add' and len(arg) == 4):    # add
                     insertPost(arg[2] , arg[3])
                 elif arg[1] == 'search':   # Search
@@ -154,20 +201,21 @@ def cmdDet(arg):
                 elif (len(arg) == 6):
                     if (arg[4] == '--category'):	# 9th Command
                         bothCmd(arg)
+                elif (arg[1] == 'del'):
+                    delPost(arg[2])
                 else:
                     print('Command doesn\'t exist or argument not present')
                     print('for help type blog.py --help')
-             except Exception as err:
-                 print("Command argument not present or invalid",str(err)) 
-                 print('for help type blog.py --help')
+            except Exception as err:
+                print("Command argument not present or invalid") 
+                print('for help type blog.py --help')
         # category commands start from here
         elif (arg[0] == 'category' and len(arg) >= 2):  # category
             try:
                 if (arg[1] == 'add' and len(arg) == 3): 
-                    if (arg[2].isdigit()) == False:
-                        createCat(arg[2]) # adding category name                               
-                    else:
-                        print("Category name should be words")
+                   present = createCat(arg[2]) # adding category name                               
+                   if(present): 
+                         print("Category is added")
                 elif (arg[1] == 'list' and len(arg) == 2):      
                     listCat()    #category list command
                 elif (arg[1] == 'assign' and len(arg) == 4):    #Category assign 
@@ -182,11 +230,12 @@ def cmdDet(arg):
     except Exception as err:
         print('No Argument ')
         print('For help type blog.py --help', str(err))
+
 def main(argv):
-    if __name__ == "__main__":
-        arg = argv[1:]
-        create()
-        if len(arg) >= 1:
-            cmdDet(arg)
+   if __name__ == "__main__":
+       arg = argv[1:]
+       create()
+       if len(arg) >= 1:
+           cmdDet(arg)
         
 main(sys.argv)
