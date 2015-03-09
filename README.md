@@ -8,7 +8,8 @@ Application is built using python 3 and Sqlite3 database. Two tables cover up th
 ###Commands
  * ./blog.py --help
  * ./blog.py post list  
- * ./blog.py post add "Post Name" "Content"
+ * ./blog.py post add "post Name" "Content"
+ * ./blog.py post del post-id
  * ./blog.py post search "keyword"
  * ./blog.py category add "Category-Name"
  * ./blog.py category list
